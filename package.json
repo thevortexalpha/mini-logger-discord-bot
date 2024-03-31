@@ -1,0 +1,9 @@
+{
+  "name": "servermanager(alpha)",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/index.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

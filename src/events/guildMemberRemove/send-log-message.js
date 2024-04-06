@@ -1,5 +1,5 @@
 const { EmbedBuilder } = require('discord.js');
-const loggingChannelSchema = require('../../models/LoggingChannel');
+const loggingChannelSchema = require('DiscordProjects/mini-logger-discord-bot/mini-logger-discord-bot/src/models/LoggingChannel');
 
 /** @param {import('discord.js').GuildMember} guildMember */
 module.exports = async (guildMember) => {

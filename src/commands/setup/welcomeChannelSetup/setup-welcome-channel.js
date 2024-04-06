@@ -1,6 +1,6 @@
 'use strict';
 const { SlashCommandBuilder, PermissionFlagsBits, ChannelType } = require('discord.js');
-const welcomeChannelSchema = require('../../models/WelcomeChannel');
+const welcomeChannelSchema = require('../../../models/WelcomeChannel');
 
 const data = new SlashCommandBuilder()
     .setName('setup-welcome-channel')

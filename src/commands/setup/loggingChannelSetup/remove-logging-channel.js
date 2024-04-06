@@ -1,6 +1,6 @@
 'use strict';
 const { SlashCommandBuilder, PermissionFlagsBits, ChannelType } = require('discord.js');
-const loggingChannelSchema = require('../../models/LoggingChannel');
+const loggingChannelSchema = require('../../../models/LoggingChannel');
 
 const data = new SlashCommandBuilder()
     .setName('remove-logging-channel')

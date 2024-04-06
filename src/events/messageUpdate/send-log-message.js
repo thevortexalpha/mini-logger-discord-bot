@@ -10,6 +10,8 @@ module.exports = async (oldMessage, newMessage) => {
 
         if(!oldMessage.author) return;
 
+        if(oldMessage.author.bot) return;
+
         /** Fetching the configurations for the particular server */
         const logConfigs = await loggingChannelSchema.find({
             guildId: oldMessage.guild.id

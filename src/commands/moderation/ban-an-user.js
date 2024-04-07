@@ -3,11 +3,11 @@ const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder } = require('disc
 const loggingChannelSchema = require('../../models/LoggingChannel');
 
 const data = new SlashCommandBuilder()
-    .setName('kick-an-user')
+    .setName('ban-an-user')
     .setDescription('Ban an user from the guild.')
     .setDMPermission(false)
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
-    .addMentionableOption((option) => 
+    .addUserOption((option) => 
         option
             .setName('target-user')
             .setDescription('User you would like to ban.')
@@ -53,14 +53,15 @@ async function run({ interaction }) {
 
             await interaction.deferReply();
 
-            const targetUser = await interaction.guild.members.fetch(targetUserId);
+            // const targetUser = await interaction.guild.members.fetch(targetUserId);
+            const targetUser = interaction.guild.members.cache.get(targetUserId);
 
             if(!targetUser) {
-                await interaction.reply(`That user doesn't exist in this guild!`);
+                await interaction.editReply(`That user doesn't exist in this guild!`);
                 return;
             }
             else if (targetUser.id === interaction.guild.ownerId) {
-                await interaction.reply(`You can not ban the owner of this guild!`);
+                await interaction.editReply(`You can not ban the owner of this guild!`);
                 return;
             }
 
@@ -72,38 +73,43 @@ async function run({ interaction }) {
             const botRolePosition = interaction.guild.members.me.roles.highest.position;
 
             if(targetUserRolePosition >= requestUserRolePosition){
-                await interaction.reply(`You can't ban that user because they have the same/higher role than you.`);
+                await interaction.editReply(`You can't ban that user because they have the same/higher role than you.`);
                 return;
             }
             if(targetUserRolePosition >= botRolePosition){
-                await interaction.reply(`I can't ban that user because they have the same/higher role than me.`);
+                await interaction.editReply(`I can't ban that user because they have the same/higher role than me.`);
                 return;
             }
 
-            await targetUser.ban({ reasonForBan });
-            await interaction.editReply(`User ${targetUser} was banned.\nReason: ${reasonForBan}`);
+            try {
+                await targetUser.ban({ reasonForBan });
+                await interaction.editReply(`User ${targetUser} was banned.\nReason: ${reasonForBan}`);
+    
+                /** Creating a log embed message when user is banned from the guild. PENDING */ 
+                const userBanEmbed = new EmbedBuilder()
+                    .setColor('DarkRed')
+                    .setAuthor({ 
+                        name: `${interaction.user.globalName}`, 
+                        iconURL: interaction.user.avatarURL(), 
+                    })
+                    .setDescription(`<@${interaction.id}> is banned from this server.`)
+                    .addFields(
+                        { name: 'Reason', value: `${reasonForBan}`},
+                    )
+                    .addFields({
+                        name: 'ID',
+                        value: `\`\`\`js\nUser = ${interaction.user.id}\n\`\`\``
+                    })
+                    .setTimestamp()
+                    .setFooter({ 
+                        text: '👈(ﾟヮﾟ👈) Road Warrior Enterprise (👉ﾟヮﾟ)👉', 
+                        iconURL: 'https://i.imgur.com/GmM7g7F.png', 
+                    });
+                loggingChannel.send({embeds: [userBanEmbed]}).catch(() => {});
 
-            /** Creating a log embed message when user leave the guild. PENDING */ 
-            const userBanEmbed = new EmbedBuilder()
-                .setColor('DarkRed')
-                .setAuthor({ 
-                    name: `${interaction.user.globalName}`, 
-                    iconURL: interaction.user.avatarURL(), 
-                })
-                .setDescription(`<@${interaction.id}> is banned from this server.`)
-                .addFields(
-                    { name: 'Reason', value: `${reasonForBan}`},
-                )
-                .addFields({
-                    name: 'ID',
-                    value: `\`\`\`js\nUser = ${interaction.user.id}\n\`\`\``
-                })
-                .setTimestamp()
-                .setFooter({ 
-                    text: '👈(ﾟヮﾟ👈) Road Warrior Enterprise (👉ﾟヮﾟ)👉', 
-                    iconURL: 'https://i.imgur.com/GmM7g7F.png', 
-                });
-            loggingChannel.send({embeds: [userBanEmbed]}).catch(() => {});
+            } catch (error) {
+                console.log(`Error happened while banning a user in ${__filename}.\nError: `,error);
+            }
         }
     } catch(error) {
         console.log(`Error happened in ${__filename}.\nError: `,error);
